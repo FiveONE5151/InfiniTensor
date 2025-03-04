@@ -1,4 +1,4 @@
-﻿.PHONY : build clean format install-python test-cpp test-onnx install-infini
+.PHONY : build clean format install-python test-cpp test-onnx install-infini
 
 TYPE ?= Release
 CUDA ?= OFF

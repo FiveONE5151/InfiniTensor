@@ -58,6 +58,8 @@ class ClipObj : public OperatorObj {
     int numInputs() const override { return 1; }
     int numOutputs() const override { return 1; }
 
+    void initInfiniOp(const Runtime context) override;
+
   private:
     std::optional<float> minValue, maxValue;
     vector<int> getWorkloadVector() const override;

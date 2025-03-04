@@ -1,5 +1,7 @@
 #include "core/graph.h"
 #include "core/runtime.h"
+#include <iostream>
+#include <ostream>
 #ifdef USE_CUDA
 #include "cuda/cuda_runtime.h"
 #endif
@@ -20,6 +22,26 @@ void testUnaryCpu(
     g->dataMalloc();
     input->setData(generator);
 
+    runtime->run(g);
+    // op->getOutput()->print();
+    // op->getOutput()->printData();
+    EXPECT_TRUE(1);
+}
+
+void testClipCpu(const std::function<void(void *, size_t, DataType)> &generator,
+                 const Shape &shape, const DataType &dataType,
+                 std::optional<float> min, std::optional<float> max) {
+    Runtime runtime = NativeCpuRuntimeObj::getInstance();
+    Graph g = make_ref<GraphObj>(runtime);
+    auto input = g->addTensor(shape, dataType);
+
+    auto op = g->addOp<ClipObj>(input, nullptr, min, max);
+
+    g->dataMalloc();
+    input->setData(generator);
+    std::cout << "Inputs0 before run: " << op->getInputs(0)->toString()
+              << std::endl;
+    // std::cout << "Graph: " << g->toString() << std::endl;
     runtime->run(g);
     // op->getOutput()->print();
     // op->getOutput()->printData();
@@ -67,6 +89,13 @@ TEST(ElementWise, Cpu) {
                           DataType::Float16);
 }
 
+TEST(Clip, Cpu) {
+    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::Float32,
+                0.5, 0.8);
+
+    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::UInt32,
+                0.5, 0.8);
+}
 #ifdef USE_CUDA
 TEST(ElementWise, Cuda) {
     testUnaryCuda<ReluObj>(IncrementalGenerator(), Shape{1, 2, 2, 3},

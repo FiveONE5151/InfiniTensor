@@ -91,6 +91,42 @@ vector<int> ClipObj::getWorkloadVector() const {
 
 vector<int> ClipObj::getOpAttrVector() const { return {type.underlying()}; }
 
+void ClipObj::initInfiniOp(const Runtime context) {
+    auto x_dim = inputs[0]->getDims();
+    auto y_dim = outputs[0]->getDims();
+
+    auto x_shape = toInfiniopShape(x_dim);
+    auto y_shape = toInfiniopShape(y_dim);
+
+    // create tensor descriptor
+    infiniopTensorDescriptor_t x_tensor;
+    CHECK_ERROR(infiniopCreateTensorDescriptor(
+        &x_tensor, x_dim.size(), x_shape.data(), nullptr,
+        toInfiniopDataLayout(inputs[0]->getDType().getIndex())));
+    infiniopTensorDescriptor_t y_tensor;
+    CHECK_ERROR(infiniopCreateTensorDescriptor(
+        &y_tensor, y_dim.size(), y_shape.data(), nullptr,
+        toInfiniopDataLayout(outputs[0]->getDType().getIndex())));
+    infiniopTensorDescriptor_t min_value;
+    CHECK_ERROR(infiniopCreateTensorDescriptor(
+        &min_value, 0, nullptr, nullptr,
+        toInfiniopDataLayout(inputs[0]->getDTypeIndex())));
+    infiniopTensorDescriptor_t max_value;
+    CHECK_ERROR(infiniopCreateTensorDescriptor(
+        &max_value, 0, nullptr, nullptr,
+        toInfiniopDataLayout(inputs[0]->getDTypeIndex())));
+
+    // create op descriptor
+    CHECK_ERROR(infiniopCreateClipDescriptor(
+        context->opHandle(), (infiniopClipDescriptor_t *)&opDesc, x_tensor,
+        min_value, max_value, y_tensor));
+
+    // destroy tensor descriptor
+    CHECK_ERROR(infiniopDestroyTensorDescriptor(x_tensor));
+    CHECK_ERROR(infiniopDestroyTensorDescriptor(y_tensor));
+    CHECK_ERROR(infiniopDestroyTensorDescriptor(min_value));
+    CHECK_ERROR(infiniopDestroyTensorDescriptor(max_value));
+}
 HardtanhObj::HardtanhObj(GraphObj *graph, Tensor input, Tensor output,
                          float min, float max)
     : OperatorObj(OpType::Hardtanh, {input}, {output}), minValue(min),
