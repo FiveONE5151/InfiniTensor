@@ -39,12 +39,8 @@ void testClipCpu(const std::function<void(void *, size_t, DataType)> &generator,
 
     g->dataMalloc();
     input->setData(generator);
-    std::cout << "Inputs0 before run: " << op->getInputs(0)->toString()
-              << std::endl;
-    // std::cout << "Graph: " << g->toString() << std::endl;
     runtime->run(g);
-    // op->getOutput()->print();
-    // op->getOutput()->printData();
+
     EXPECT_TRUE(1);
 }
 

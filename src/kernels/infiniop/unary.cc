@@ -39,6 +39,8 @@ class ClipOp : public UnaryOp {
         auto op = as<ClipObj>(_op);
         void *const xData = (op->getInputs(0)->getRawDataPtr<void *>());
         void *const yData = (op->getOutput()->getRawDataPtr<void *>());
+
+        // TODO: optional min/max to be implemented
         float minVal = op->getMin().has_value() ? op->getMin().value() : 0.0f;
         float maxVal = op->getMax().has_value() ? op->getMax().value() : 0.0f;
 
@@ -51,8 +53,6 @@ class ClipOp : public UnaryOp {
         CHECK_ERROR(infiniopClip((infiniopClipDescriptor_t)op->getOpDesc(),
                                  xData, minData, maxData, yData,
                                  context->getCurrentStream()));
-
-        std::cout << "Using infiniopClip\n";
     }
 
     PerfRecord tune(const Operator &_op,

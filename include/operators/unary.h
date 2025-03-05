@@ -1,5 +1,10 @@
 #pragma once
+#include "core/op_type.h"
 #include "core/operator.h"
+#include "ops/clip/clip.h"
+#include "utils/infiniop_utils.h"
+#include <iostream>
+#include <ostream>
 
 namespace infini {
 /**
@@ -49,6 +54,18 @@ class ClipObj : public OperatorObj {
   public:
     ClipObj(GraphObj *graph, Tensor input, Tensor output,
             std::optional<float> min, std::optional<float> max);
+
+    ~ClipObj() override {
+        if (opDesc) {
+            try {
+
+                CHECK_ERROR(infiniopDestroyClipDescriptor(
+                    (infiniopClipDescriptor_t)opDesc));
+            } catch (const std::exception &e) {
+                std::cerr << "Error in ~ClipObj: " << e.what() << std::endl;
+            }
+        }
+    }
     OP_CLONE(ClipObj);
     optional<vector<Shape>> inferShape(const TensorVec &inputs) override;
 

@@ -28,6 +28,8 @@ class WhereObj : public OperatorObj {
     int numInputs() const override { return inputs.size(); }
     int numOutputs() const override { return 1; }
 
+    void initInfiniOp(const Runtime context) override;
+
   private:
     vector<int> getWorkloadVector() const override;
     vector<int> getOpAttrVector() const override;
