@@ -1,5 +1,6 @@
 #include "operators/where.h"
 #include "core/kernel.h"
+#include "ops/where/where.h"
 #include "utils/infiniop_utils.h"
 
 namespace infini {
@@ -15,10 +16,9 @@ class WhereOp : public Kernel {
         void *const outputData = (op->getOutput()->getRawDataPtr<void *>());
 
         // execute op
-        // TODO: implement infiniopWhere
-        // CHECK_ERROR(infiniopWhere((infiniopClipDescriptor_t)op->getOpDesc(),
-        //                           inputXData, inputYData, condData,
-        //                           outputData, context->getCurrentStream()));
+        CHECK_ERROR(infiniopWhere((infiniopWhereDescriptor_t)op->getOpDesc(),
+                                  inputXData, inputYData, condData, outputData,
+                                  context->getCurrentStream()));
     }
 
     PerfRecord tune(const Operator &_op,

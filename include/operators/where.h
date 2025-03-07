@@ -20,6 +20,7 @@ class WhereObj : public OperatorObj {
      */
     WhereObj(GraphObj *graph, Tensor inputX, Tensor inputY, Tensor condition,
              Tensor output);
+    ~WhereObj() override;
     OP_CLONE(WhereObj);
 
     optional<vector<Shape>> inferShape(const TensorVec &inputs) override;

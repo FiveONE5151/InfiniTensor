@@ -2,6 +2,7 @@
 #include "core/runtime.h"
 #include "core/tensor.h"
 #include "utils/data_generator.h"
+#include <iostream>
 
 #ifdef USE_CUDA
 #include "cuda/cuda_runtime.h"
@@ -21,7 +22,7 @@ void testWhereCpu(
     Graph g = make_ref<GraphObj>(runtime);
     auto inputX = g->addTensor(shapeX, dataType);
     auto inputY = g->addTensor(shapeY, dataType);
-    auto condition = g->addTensor(shapeCon, DataType::Float32);
+    auto condition = g->addTensor(shapeCon, DataType::UInt8);
     auto op = g->addOp<WhereObj>(inputX, inputY, condition, nullptr);
 
     g->dataMalloc();
@@ -35,7 +36,7 @@ void testWhereCpu(
 }
 
 TEST(Where, Cpu) {
-    testWhereCpu(IncrementalGenerator(), OneGenerator(), Shape{1, 2, 2, 3},
+    testWhereCpu(IncrementalGenerator(), RandomGenerator(), Shape{1, 2, 2, 3},
                  Shape{1, 2, 2, 3}, Shape{1, 2, 2, 3}, DataType::Float32);
 }
 

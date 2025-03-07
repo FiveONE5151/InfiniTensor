@@ -2,6 +2,7 @@
 #include "tensor/tensor_descriptor.h"
 #include "utils/infiniop_utils.h"
 #include "utils/operator_utils.h"
+#include <iostream>
 
 namespace infini {
 
@@ -11,7 +12,16 @@ WhereObj::WhereObj(GraphObj *graph, Tensor inputX, Tensor inputY,
                   {output}) {
     IT_ASSERT(checkValid(graph));
 }
-
+WhereObj::~WhereObj() {
+    if (opDesc) {
+        try {
+            CHECK_ERROR(infiniopDestroyWhereDescriptor(
+                (infiniopWhereDescriptor_t)opDesc));
+        } catch (const std::exception &e) {
+            std::cerr << "Error in ~WhereObj: " << e.what() << std::endl;
+        }
+    }
+}
 optional<vector<Shape>> WhereObj::inferShape(const TensorVec &inputs) {
     auto shapeX = inputs[0]->getDims();
     auto shapeY = inputs[1]->getDims();
@@ -60,21 +70,20 @@ void WhereObj::initInfiniOp(const Runtime context) {
     infiniopTensorDescriptor_t inputY_tensor;
     CHECK_ERROR(infiniopCreateTensorDescriptor(
         &inputY_tensor, inputY_dim.size(), inputY_shape.data(), nullptr,
-        toInfiniopDataLayout(outputs[0]->getDType().getIndex())));
+        toInfiniopDataLayout(inputs[1]->getDType().getIndex())));
     infiniopTensorDescriptor_t cond_tensor;
     CHECK_ERROR(infiniopCreateTensorDescriptor(
-        &cond_tensor, 0, nullptr, nullptr,
-        toInfiniopDataLayout(inputs[0]->getDTypeIndex())));
+        &cond_tensor, cond_dim.size(), cond_shape.data(), nullptr,
+        toInfiniopDataLayout(inputs[2]->getDTypeIndex())));
     infiniopTensorDescriptor_t output_tensor;
     CHECK_ERROR(infiniopCreateTensorDescriptor(
-        &output_tensor, 0, nullptr, nullptr,
-        toInfiniopDataLayout(inputs[0]->getDTypeIndex())));
+        &output_tensor, output_dim.size(), output_shape.data(), nullptr,
+        toInfiniopDataLayout(outputs[0]->getDTypeIndex())));
 
     // create op descriptor
-    // TODO: implement infiniopCreateWhereDescriptor
-    // CHECK_ERROR(infiniopCreateWhereDescriptor(
-    //     context->opHandle(), (infiniopClipDescriptor_t *)&opDesc,
-    //     inputX_tensor, inputY_tensor, cond_tensor, output_tensor));
+    CHECK_ERROR(infiniopCreateWhereDescriptor(
+        context->opHandle(), (infiniopWhereDescriptor_t *)&opDesc,
+        inputX_tensor, inputY_tensor, cond_tensor, output_tensor));
 
     // destroy tensor descriptor
     CHECK_ERROR(infiniopDestroyTensorDescriptor(inputX_tensor));

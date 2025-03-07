@@ -1,7 +1,9 @@
 #pragma once
 #include "core/common.h"
+#include "core/data_type.h"
 #include "core/tensor_base.h"
 #include "utils/data_convert.h"
+#include <cstdint>
 #include <random>
 
 namespace infini {
@@ -10,6 +12,8 @@ namespace infini {
 class DataGenerator {
   private:
     virtual void fill(uint32_t *data, size_t size) { IT_TODO_HALT(); }
+
+    virtual void fill(uint8_t *data, size_t size) { IT_TODO_HALT(); }
     virtual void fill(float *data, size_t size) { IT_TODO_HALT(); }
     virtual void fill_fp16(uint16_t *data, size_t size) { IT_TODO_HALT(); }
 
@@ -18,7 +22,10 @@ class DataGenerator {
     void operator()(void *data, size_t size, DataType dataType) {
         if (dataType == DataType::UInt32)
             fill(reinterpret_cast<uint32_t *>(data), size);
-        else if (dataType == DataType::Float32)
+        else if (dataType == DataType::UInt8) {
+            fill(reinterpret_cast<uint8_t *>(data), size);
+
+        } else if (dataType == DataType::Float32)
             fill(reinterpret_cast<float *>(data), size);
         else if (dataType == DataType::Float16)
             fill_fp16(reinterpret_cast<uint16_t *>(data), size);
@@ -74,6 +81,12 @@ class RandomGenerator : public DataGenerator {
             data[i] = dr(e);
         }
     }
+
+    void fill(uint8_t *data, size_t size) override {
+        for (size_t i = 0; i < size; i++) {
+            data[i] = di(e);
+        }
+    }
 };
 
 template <int val> class ValGenerator : public DataGenerator {
@@ -89,6 +102,10 @@ template <int val> class ValGenerator : public DataGenerator {
 
     void fill(uint32_t *data, size_t size) override {
         fill<uint32_t>(data, size);
+    }
+
+    void fill(uint8_t *data, size_t size) override {
+        fill<uint8_t>(data, size);
     }
     void fill(float *data, size_t size) override { fill<float>(data, size); }
     void fill_fp16(uint16_t *data, size_t size) {
