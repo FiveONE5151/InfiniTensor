@@ -33,8 +33,9 @@
 
 build/
 build_debug/
-
+.cache/
 .vscode/
+*.json
 
 # python
 *.egg-info
