@@ -1,6 +1,7 @@
 #include "core/graph.h"
 #include "core/runtime.h"
 #include <iostream>
+#include <optional>
 #include <ostream>
 #ifdef USE_CUDA
 #include "cuda/cuda_runtime.h"
@@ -89,8 +90,17 @@ TEST(Clip, Cpu) {
     testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::Float32,
                 0.5, 0.8);
 
-    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::UInt32,
-                0.5, 0.8);
+    // testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::UInt32,
+    //             0.5, 0.8);
+
+    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::Float32,
+                0.5, std::nullopt);
+
+    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::Float32,
+                std::nullopt, 0.8);
+
+    testClipCpu(IncrementalGenerator(), Shape{1, 2, 2, 3}, DataType::Float32,
+                std::nullopt, std::nullopt);
 }
 #ifdef USE_CUDA
 TEST(ElementWise, Cuda) {

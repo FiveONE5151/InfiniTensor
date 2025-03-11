@@ -1,6 +1,8 @@
 #include "operators/unary.h"
 #include "core/kernel.h"
 #include "utils/infiniop_utils.h"
+#include <cstdint>
+#include <limits>
 
 namespace infini {
 
@@ -40,19 +42,27 @@ class ClipOp : public UnaryOp {
         void *const xData = (op->getInputs(0)->getRawDataPtr<void *>());
         void *const yData = (op->getOutput()->getRawDataPtr<void *>());
 
-        // TODO: optional min/max to be implemented
-        float minVal = op->getMin().has_value() ? op->getMin().value() : 0.0f;
-        float maxVal = op->getMax().has_value() ? op->getMax().value() : 0.0f;
+        void *minData = nullptr;
+        void *maxData = nullptr;
+        if (op->getInputs(0)->getDType() == DataType::Float32) {
+            float minVal = op->getMin().has_value()
+                               ? op->getMin().value()
+                               : -std::numeric_limits<float>::infinity();
+            float maxVal = op->getMax().has_value()
+                               ? op->getMax().value()
+                               : +std::numeric_limits<float>::infinity();
 
-        void *const minData =
-            op->getMin().has_value() ? (void *)&minVal : nullptr;
-        void *const maxData =
-            op->getMax().has_value() ? (void *)&maxVal : nullptr;
+            minData = (void *)&minVal;
+            maxData = (void *)&maxVal;
 
-        // execute op
-        CHECK_ERROR(infiniopClip((infiniopClipDescriptor_t)op->getOpDesc(),
-                                 xData, minData, maxData, yData,
-                                 context->getCurrentStream()));
+            // execute op
+            CHECK_ERROR(infiniopClip((infiniopClipDescriptor_t)op->getOpDesc(),
+                                     xData, minData, maxData, yData,
+                                     context->getCurrentStream()));
+        } else {
+            // TODO: support other data types
+            IT_TODO_HALT();
+        }
     }
 
     PerfRecord tune(const Operator &_op,
